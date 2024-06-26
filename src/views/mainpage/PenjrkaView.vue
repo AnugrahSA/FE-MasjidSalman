@@ -28,15 +28,26 @@
               </b-dropdown>
             </div>
             <div class="tombol">
-              <button type="button" class="btn">
-                Filter<b-icon-funnel-fill></b-icon-funnel-fill>
-              </button>
               <div class="print">
                 <button type="button" class="btn">
                   <b-icon-printer-fill
                     style="width: 20px; height: 20px"
                   ></b-icon-printer-fill>
                 </button>
+              </div>
+            </div>
+            <div class="tahun">Tahun</div>
+            <div class="tahun1">
+              <div class="dropdown">
+                <select
+                  v-model="selectedYear"
+                  class="m-md-2"
+                  style="width: 90px; height: 38px"
+                >
+                  <option v-for="year in years" :key="year" :value="year">
+                    {{ year }}
+                  </option>
+                </select>
               </div>
             </div>
           </div>
@@ -75,11 +86,11 @@
           <table class="tabel" v-if="!showResumeTable">
             <thead>
               <tr>
-                <th style="width: 40px">No.</th>
+                <th style="width: 40px">id</th>
                 <!-- Set lebar kolom No. -->
-                <th>Program-Kegiatan</th>
-                <th>Deskripsi Singkat</th>
-                <th>Output/Keluaran</th>
+                <th>nama</th>
+                <th>deskripsi</th>
+                <th>output</th>
                 <th>Nominal Anggaran</th>
                 <th style="text-align: center"></th>
               </tr>
@@ -101,12 +112,12 @@
                   v-for="(program, index) in programAnggaranByOption"
                   :key="index"
                 >
-                  <td>{{ program.no }}</td>
+                  <td>{{ program.id }}</td>
                   <td>
                     <template v-if="!program.isEditing">{{
-                      program.program
+                      program.nama
                     }}</template>
-                    <input type="text" v-model="program.program" v-else />
+                    <input type="text" v-model="program.nama" v-else />
                   </td>
                   <td>
                     <template v-if="!program.isEditing">{{
@@ -192,205 +203,18 @@
   </div>
 </template>
 
-<script>
+<script lang="ts">
 import Sidebar from "@/components/SidebarView.vue";
-import axios from "axios";
+import axios from "@/lib/axios";
 
 export default {
   data() {
     return {
+      selectedYear: new Date().getFullYear(),
+      years: this.generateYears(),
       showResumeTable: false,
-      // programResume: {
-      //   "PROGRAM KEPUSTAKAAN": [
-      //     {
-      //       no: 1,
-      //       program: "Pembangunan Perpustakaan",
-      //       pusat: 50000000, // Rp 50.000.000
-      //       ras: 10000000, // Rp 10.000.000
-      //       kepesertaan: 25000000, // Rp 25.000.000
-      //       pihakKetiga: 0, // Rp 0
-      //       wakafSalman: 15000000, // Rp 15.000.000
-      //       totalAnggaran: 500000000, // Rp 500.000.000
-      //     },
-      //     {
-      //       no: 2,
-      //       program: "Peningkatan Literasi",
-      //       pusat: 30000000, // Rp 30.000.000
-      //       ras: 0, // Rp 0
-      //       kepesertaan: 80000000, // Rp 80.000.000
-      //       pihakKetiga: 50000000, // Rp 50.000.000
-      //       wakafSalman: 0, // Rp 0
-      //       totalAnggaran: 300000000, // Rp 300.000.000
-      //     },
-      //     {
-      //       no: 3,
-      //       program: "Kampanye Lingkungan",
-      //       pusat: 20000000, // Rp 20.000.000
-      //       ras: 50000000, // Rp 50.000.000
-      //       kepesertaan: 40000000, // Rp 40.000.000
-      //       pihakKetiga: 0, // Rp 0
-      //       wakafSalman: 20000000, // Rp 20.000.000
-      //       totalAnggaran: 200000000, // Rp 200.000.000
-      //     },
-      //   ],
-      //   "PROGRAM INTELEKTUALITAS": [
-      //     // Data untuk opsi "PROGRAM INTELEKTUALITAS"
-      //     {
-      //       no: 1,
-      //       program: "c",
-      //       pusat: 50000000, // Rp 50.000.000
-      //       ras: 10000000, // Rp 10.000.000
-      //       kepesertaan: 25000000, // Rp 25.000.000
-      //       pihakKetiga: 0, // Rp 0
-      //       wakafSalman: 15000000, // Rp 15.000.000
-      //       totalAnggaran: 500000000, // Rp 500.000.000
-      //     },
-      //     {
-      //       no: 2,
-      //       program: "b",
-      //       pusat: 30000000, // Rp 30.000.000
-      //       ras: 0, // Rp 0
-      //       kepesertaan: 80000000, // Rp 80.000.000
-      //       pihakKetiga: 50000000, // Rp 50.000.000
-      //       wakafSalman: 0, // Rp 0
-      //       totalAnggaran: 300000000, // Rp 300.000.000
-      //     },
-      //     {
-      //       no: 3,
-      //       program: "a",
-      //       pusat: 20000000, // Rp 20.000.000
-      //       ras: 50000000, // Rp 50.000.000
-      //       kepesertaan: 40000000, // Rp 40.000.000
-      //       pihakKetiga: 0, // Rp 0
-      //       wakafSalman: 20000000, // Rp 20.000.000
-      //       totalAnggaran: 200000000, // Rp 200.000.000
-      //     },
-      //   ],
-      //   "PROGRAM EKOLITERASI": [
-      //     // Data untuk opsi "PROGRAM EKOLITERASI"
-      //     {
-      //       no: 1,
-      //       program: "diac",
-      //       pusat: 50000000, // Rp 50.000.000
-      //       ras: 10000000, // Rp 10.000.000
-      //       kepesertaan: 25000000, // Rp 25.000.000
-      //       pihakKetiga: 0, // Rp 0
-      //       wakafSalman: 15000000, // Rp 15.000.000
-      //       totalAnggaran: 500000000, // Rp 500.000.000
-      //     },
-      //     {
-      //       no: 2,
-      //       program: "aku",
-      //       pusat: 30000000, // Rp 30.000.000
-      //       ras: 0, // Rp 0
-      //       kepesertaan: 80000000, // Rp 80.000.000
-      //       pihakKetiga: 50000000, // Rp 50.000.000
-      //       wakafSalman: 0, // Rp 0
-      //       totalAnggaran: 300000000, // Rp 300.000.000
-      //     },
-      //     {
-      //       no: 3,
-      //       program: "kamu",
-      //       pusat: 20000000, // Rp 20.000.000
-      //       ras: 50000000, // Rp 50.000.000
-      //       kepesertaan: 40000000, // Rp 40.000.000
-      //       pihakKetiga: 0, // Rp 0
-      //       wakafSalman: 20000000, // Rp 20.000.000
-      //       totalAnggaran: 200000000, // Rp 200.000.000
-      //     },
-      //   ],
-      //   "SUPPORTING SYSTEM": [
-      //     // Data untuk opsi "SUPPORTING SYSTEM"
-      //   ],
-      // },
-
-      // programAnggaran: {
-      //   "PROGRAM KEPUSTAKAAN": [
-      //     {
-      //       no: 1,
-      //       program: "Pembangunan Perpustakaan",
-      //       deskripsi: "Membangun perpustakaan di setiap desa",
-      //       output: "Jumlah perpustakaan yang dibangun",
-      //       anggaran: "500.000.000",
-      //       isEditing: false,
-      //     },
-      //     {
-      //       no: 2,
-      //       program: "Peningkatan Literasi",
-      //       deskripsi: "Melakukan pelatihan literasi untuk masyarakat",
-      //       output: "Jumlah peserta pelatihan",
-      //       anggaran: "300.000.000",
-      //       isEditing: false,
-      //     },
-      //     {
-      //       no: 3,
-      //       program: "Kampanye Lingkungan",
-      //       deskripsi: "Mengadakan kampanye tentang pentingnya lingkungan",
-      //       output: "Jumlah orang yang terlibat dalam kampanye",
-      //       anggaran: "200.000.000",
-      //       isEditing: false,
-      //     },
-      //   ],
-      //   "PROGRAM INTELEKTUALITAS": [
-      //     // Data untuk opsi "PROGRAM INTELEKTUALITAS"
-      //     {
-      //       no: 1,
-      //       program: "c",
-      //       deskripsi: "Membangun perpustakaan di setiap desa",
-      //       output: "Jumlah perpustakaan yang dibangun",
-      //       anggaran: "500.000.000",
-      //       isEditing: false,
-      //     },
-      //     {
-      //       no: 2,
-      //       program: "b",
-      //       deskripsi: "Melakukan pelatihan literasi untuk masyarakat",
-      //       output: "Jumlah peserta pelatihan",
-      //       anggaran: "300.000.000",
-      //       isEditing: false,
-      //     },
-      //     {
-      //       no: 3,
-      //       program: "a",
-      //       deskripsi: "Mengadakan kampanye tentang pentingnya lingkungan",
-      //       output: "Jumlah orang yang terlibat dalam kampanye",
-      //       anggaran: "200.000.000",
-      //       isEditing: false,
-      //     },
-      //   ],
-      //   "PROGRAM EKOLITERASI": [
-      //     // Data untuk opsi "PROGRAM EKOLITERASI"
-      //     {
-      //       no: 1,
-      //       program: "dia",
-      //       deskripsi: "Membangun perpustakaan di setiap desa",
-      //       output: "Jumlah perpustakaan yang dibangun",
-      //       anggaran: "500.000.000",
-      //       isEditing: false,
-      //     },
-      //     {
-      //       no: 2,
-      //       program: "kamu",
-      //       deskripsi: "Melakukan pelatihan literasi untuk masyarakat",
-      //       output: "Jumlah peserta pelatihan",
-      //       anggaran: "300.000.000",
-      //       isEditing: false,
-      //     },
-      //     {
-      //       no: 3,
-      //       program: "aku",
-      //       deskripsi: "Mengadakan kampanye tentang pentingnya lingkungan",
-      //       output: "Jumlah orang yang terlibat dalam kampanye",
-      //       anggaran: "200.000.000",
-      //       isEditing: false,
-      //     },
-      //   ],
-      //   "SUPPORTING SYSTEM": [
-      //     // Data untuk opsi "SUPPORTING SYSTEM"
-      //   ],
-      // },
-      programResume: [],
-      programAnggaran: [],
+      programAnggaran: [], // Hapus data default, karena akan diisi dari API
+      programResume: [], // Hapus data default, karena akan diisi dari API
       options: [
         "PROGRAM KEPUSTAKAAN",
         "PROGRAM INTELEKTUALITAS",
@@ -416,14 +240,20 @@ export default {
     },
   },
   mounted() {
-    // Panggil method untuk mendapatkan data program dari database
     this.fetchProgramData();
   },
   methods: {
+    generateYears() {
+      const currentYear = new Date().getFullYear();
+      const years = [];
+      for (let i = currentYear; i >= currentYear - 3; i--) {
+        years.push(i);
+      }
+      return years;
+    },
     fetchProgramData() {
-      // Ganti URL dengan endpoint API yang sesuai
       axios
-        .get("/api/program")
+        .get("/api/programKegiatanRKA")
         .then((response) => {
           this.programAnggaran = response.data.programAnggaran;
           this.programResume = response.data.programResume;
@@ -433,21 +263,13 @@ export default {
         });
     },
     editProgram(program) {
-      // Toggle isEditing saat tombol edit diklik
       program.isEditing = !program.isEditing;
-      // Simpan perubahan ke database
       this.saveChanges(program);
-      // Lakukan sesuatu dengan program yang diedit
       console.log("Editing program:", program);
     },
     saveChanges(program) {
-      // Simpan perubahan ke database
-      // Di sini Anda dapat menggunakan metode atau API yang sesuai untuk menyimpan perubahan ke database
-      // Misalnya, Anda dapat menggunakan Axios untuk membuat permintaan HTTP ke API Anda
-      // dengan payload yang berisi data yang diperbarui.
-      // Contoh:
       axios
-        .put("/api/program/" + program.id, program)
+        .put("/api/programKegiatanRKA" + program.id, program)
         .then((response) => {
           console.log("Perubahan disimpan:", response.data);
         })
@@ -456,8 +278,7 @@ export default {
         });
     },
     goToInputPage() {
-      // Mengarahkan ke halaman input
-      this.$router.push({ path: "/inputrka" }); // Ganti '/input' dengan rute yang sesuai di aplikasi Anda
+      this.$router.push({ path: "/inputrka" });
     },
     selectOption(index) {
       this.selectedOptionIndex = index;

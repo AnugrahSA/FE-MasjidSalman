@@ -345,45 +345,17 @@
   </div>
 </template>
 
-<script>
+<script lang="ts">
 import Sidebar from "@/components/SidebarView.vue";
+import axios from "@/lib/axios";
 
 export default {
   data() {
     return {
       showAnggaranTable: false,
-      programBulan: {
-        "PROGRAM KEPUSTAKAAN": [
-          {
-            no: 1,
-            uraian: "Konsumsi rapat",
-            jan: 0,
-            feb: 0,
-            mar: 0,
-            apr: 0,
-            mei: 30,
-            jun: 30,
-            jul: 30,
-            agust: 30,
-            sept: 0,
-            okt: 0,
-            nov: 0,
-            des: 0,
-            isEditing: false,
-          },
-        ],
-        "PROGRAM INTELEKTUALITAS": [],
-        "PROGRAM EKOLITERASI": [],
-        "SUPPORTING SYSTEM": [],
-      },
-      programAnggaran: {
-        "PROGRAM KEPUSTAKAAN": [],
-        "PROGRAM INTELEKTUALITAS": [],
-        "PROGRAM EKOLITERASI": [],
-        "SUPPORTING SYSTEM": [],
-      },
-      // programBulan: [],
-      // programAnggaran: [],
+
+      programBulan: [],
+      programAnggaran: [],
       options: [
         "PROGRAM KEPUSTAKAAN",
         "PROGRAM INTELEKTUALITAS",
@@ -409,6 +381,15 @@ export default {
     },
   },
   methods: {
+    async fetchData() {
+      try {
+        const response = await axios.get("/api/itemKegiatanRKA"); // Adjust the URL based on your API endpoint
+        this.programBulan = response.data.programBulan;
+        this.programAnggaran = response.data.programAnggaran;
+      } catch (error) {
+        console.error("Error fetching data:", error);
+      }
+    },
     goToInputPage() {
       // Mengarahkan ke halaman input
       this.$router.push({ path: "/inputanggaran" }); // Ganti '/input' dengan rute yang sesuai di aplikasi Anda

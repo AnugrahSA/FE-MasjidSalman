@@ -35,9 +35,6 @@
               </b-dropdown>
             </div>
             <div class="tombol">
-              <button type="button" class="btn">
-                Filter<b-icon-funnel-fill></b-icon-funnel-fill>
-              </button>
               <div class="print">
                 <button type="button" class="btn">
                   <b-icon-printer-fill

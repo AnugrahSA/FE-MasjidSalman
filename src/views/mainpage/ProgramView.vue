@@ -28,9 +28,6 @@
               </b-dropdown>
             </div>
             <div class="tombol">
-              <button type="button" class="btn" @click="goToInputPage">
-                Tambah
-              </button>
               <div class="print">
                 <button type="button" class="btn">
                   <b-icon-printer-fill></b-icon-printer-fill>
@@ -69,8 +66,17 @@
             </div>
           </div>
         </div>
-        <div class="description-box">
-          <p class="description-text">Deskripsi Pelaksanaan Kegiatan</p>
+        <div class="description-container">
+          <div class="description-box1">
+            <p class="description-text1">Deskripsi Pelaksanaan Kegiatan</p>
+          </div>
+          <div class="tombol-plus">
+            <div class="print" style="margin-top: 12px">
+              <button type="button" class="btn" style="font-size: 25px">
+                <b-icon-plus></b-icon-plus>
+              </button>
+            </div>
+          </div>
         </div>
         <div class="text-left">
           <p>Pengelolaan Salman Reading Corner</p>
@@ -105,8 +111,17 @@
           </table>
         </div>
         <!-- Akhir dari elemen tabel -->
-        <div class="description-box1">
-          <p class="description-text1">Evaluasi Kegiatan</p>
+        <div class="description-container">
+          <div class="description-box1">
+            <p class="description-text1">Evaluasi Kegiatan</p>
+          </div>
+          <div class="tombol-plus">
+            <div class="print" style="margin-top: 12px">
+              <button type="button" class="btn" style="font-size: 25px">
+                <b-icon-plus></b-icon-plus>
+              </button>
+            </div>
+          </div>
         </div>
         <!-- Tambahkan kotak di sini -->
         <div class="evaluation-box">
@@ -147,8 +162,17 @@
           </table>
         </div>
         <!-- Akhir dari elemen tabel -->
-        <div class="description-box1">
-          <p class="description-text1">Penerima Manfaat</p>
+        <div class="description-container">
+          <div class="description-box1">
+            <p class="description-text1">Penerima Manfaat</p>
+          </div>
+          <div class="tombol-plus">
+            <div class="print" style="margin-top: 12px">
+              <button type="button" class="btn" style="font-size: 25px">
+                <b-icon-plus></b-icon-plus>
+              </button>
+            </div>
+          </div>
         </div>
         <!-- Tambahkan kotak di sini -->
         <div class="evaluation-box">
@@ -191,8 +215,17 @@
           </table>
         </div>
         <!-- Akhir dari elemen tabel -->
-        <div class="description-box1">
-          <p class="description-text1">Penggunaan Dana</p>
+        <div class="description-container">
+          <div class="description-box1">
+            <p class="description-text1">Pengguna Dana</p>
+          </div>
+          <div class="tombol-plus">
+            <div class="print" style="margin-top: 12px">
+              <button type="button" class="btn" style="font-size: 25px">
+                <b-icon-plus></b-icon-plus>
+              </button>
+            </div>
+          </div>
         </div>
         <!-- Tambahkan kotak di sini -->
         <div class="Row1">
@@ -338,6 +371,11 @@ export default {
   font-weight: bold; /* Ketebalan teks di dalam kotak */
   margin-top: 10px;
   text-align: center; /* Untuk memusatkan teks di dalam kotak */
+}
+
+.description-container {
+  display: flex;
+  align-items: center; /* Untuk memusatkan vertikal elemen di dalam kontainer */
 }
 
 .description-box1 {

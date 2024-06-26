@@ -4,7 +4,7 @@
     <div class="card-container">
       <div class="card mb-3" style="max-width: 1149px; max-height: fit-content">
         <div class="kepala">
-          <p>profile</p>
+          <p>Profile</p>
         </div>
         <div class="row">
           <div class="col">
@@ -24,21 +24,17 @@
           </div>
           <div class="col-6">
             <ul class="list-group">
-              <li class="nama">Dewa Arjuna</li>
-              <li class="role">Admin</li>
+              <li class="nama">{{ user.name }}</li>
+              <li class="role">{{ user.role }}</li>
             </ul>
             <div class="identitas">
               <ul class="list-group list-group-horizontal-md">
                 <li class="list-group-item">Nama:</li>
-                <li class="list-group-item">Dewa Arjuna</li>
+                <li class="list-group-item">{{ user.name }}</li>
               </ul>
               <ul class="list-group list-group-horizontal-md">
                 <li class="list-group-item">Email:</li>
-                <li class="list-group-item">Dewa@gmail.com</li>
-              </ul>
-              <ul class="list-group list-group-horizontal-md">
-                <li class="list-group-item">Status:</li>
-                <li class="list-group-item">Admin</li>
+                <li class="list-group-item">{{ user.email }}</li>
               </ul>
             </div>
           </div>
@@ -62,30 +58,60 @@
 
 <script>
 import Sidebar from "@/components/SidebarView.vue";
+
 export default {
   components: {
     Sidebar,
   },
-
+  data() {
+    return {
+      user: {
+        name: "",
+        email: "",
+        role: "Admin", // Peran default, bisa disesuaikan atau diambil dari data pengguna jika tersedia
+      },
+    };
+  },
+  mounted() {
+    const userData = JSON.parse(sessionStorage.getItem("user"));
+    if (userData) {
+      this.user.name = userData.name;
+      this.user.email = userData.email;
+      // Ubah 'profilePicture' jika URL gambar profil tersedia di userData
+      // this.profilePicture = userData.profilePicture || '@/assets/profil.jpg';
+    }
+  },
   methods: {
     logout() {
       // Hapus token akses dari session storage
       sessionStorage.removeItem("bearer");
-      // Redirect pengguna kembali ke halaman login
-      window.location.href = "/"; // Gantilah "/login" dengan URL halaman login Anda
-    },
+      sessionStorage.removeItem("user");
 
+      // Clear localStorage data
+      localStorage.clear();
+
+      // Clear sessionStorage data
+      sessionStorage.clear();
+      // Hapus cookie (jika ada)
+      document.cookie.split(";").forEach((c) => {
+        document.cookie = c
+          .replace(/^ +/, "")
+          .replace(/=.*/, "=;expires=" + new Date().toUTCString() + ";path=/");
+      });
+
+      // Redirect pengguna kembali ke halaman login
+      window.location.href = "/"; // Gantilah "/" dengan URL halaman login Anda
+    },
     changeImage(event) {
       const file = event.target.files[0];
       if (file) {
         const reader = new FileReader();
         reader.onload = () => {
-          this.$refs.image.src = reader.result; // Mengubah gambar dengan gambar yang dipilih dari galeri
+          this.profilePicture = reader.result; // Mengubah gambar dengan gambar yang dipilih dari galeri
         };
         reader.readAsDataURL(file);
       }
     },
-
     openFileInput() {
       this.$refs.fileInput.click();
     },
@@ -93,7 +119,7 @@ export default {
 };
 </script>
 
-<style>
+<style scoped>
 .profile-picture {
   position: relative;
 }
@@ -109,7 +135,7 @@ export default {
   position: absolute;
   margin-left: 24px;
   bottom: 0;
-  left: 0; /* Ubah dari right: 0; menjadi left: 0; */
+  left: 0;
   right: 0;
   background-color: rgba(0, 0, 0, 0.5);
   color: white;
@@ -125,6 +151,7 @@ export default {
 .overlay-text:hover {
   background-color: rgba(0, 0, 0, 0.7);
 }
+
 .card-container {
   padding-left: 260px; /* Lebar sidebar + jarak antara sidebar dan kartu */
   padding-top: 33px;
