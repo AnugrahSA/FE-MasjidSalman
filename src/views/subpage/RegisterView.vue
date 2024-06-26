@@ -41,8 +41,8 @@
   </div>
 </template>
 
-<script>
-import axios from "axios";
+<script lang="ts">
+import axios from "@/lib/axios";
 
 export default {
   data() {
@@ -63,40 +63,12 @@ export default {
     togglePasswordVisibility() {
       this.showPassword = !this.showPassword;
     },
-
     async store() {
       try {
-        // Check if username already exists
-        let checkResponse = await axios.get(
-          `/api/account/${this.form.username}`
-        );
-        if (checkResponse.status === 200) {
-          // Username already exists, show notification to user
-          alert("Username already exists. Please choose another username.");
-          return; // Stop further execution
-        }
-
-        // If username is unique, proceed with account registration
-        let response = await axios.post("/api/account", this.form);
-        if (response.status === 200) {
-          console.log(response.data);
-          // Account registration successful, maybe redirect user or show a success message
-
-          // Now, send email to the provided email address
-          await axios.post("/api/send-email", {
-            email: this.form.email,
-            message:
-              "Silahkan klik link untuk authentikasi: http://yourwebsite.com/authenticate",
-          });
-
-          // Show success message to user
-          alert(
-            "Account registered successfully. Please check your email for authentication link."
-          );
-        }
+        const response = await axios.post("/register", this.form);
+        alert(response.data);
       } catch (error) {
-        console.error("Error during registration:", error);
-        // Handle error, display error message to user
+        console.error(error);
       }
     },
   },

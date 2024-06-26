@@ -153,9 +153,9 @@
   </div>
 </template>
 
-<script>
+<script lang="ts">
 import Sidebar from "@/components/SidebarView.vue";
-import axios from "axios";
+import axios from "@/lib/axios";
 
 export default {
   data() {
@@ -232,16 +232,18 @@ export default {
 
       // Kirim data ke backend server menggunakan Axios
       axios
-        .post("/api/simpan-data", formData)
+        .post("/api/programKegiatanRKA", formData)
         .then((response) => {
           // Tambahkan logika jika simpan berhasil
           console.log(response.data);
           // Misalnya, tampilkan pesan sukses kepada pengguna
+          alert("Data berhasil disimpan!");
         })
         .catch((error) => {
           // Tambahkan logika jika simpan gagal
           console.error("Terjadi kesalahan:", error);
           // Misalnya, tampilkan pesan kesalahan kepada pengguna
+          alert("Terjadi kesalahan saat menyimpan data.");
         });
     },
     generateYears() {

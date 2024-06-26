@@ -42,69 +42,103 @@
       </div>
       <div class="card mb-3" style="max-width: 1149px; max-height: fit-content">
         <div class="kepala">
-          <p>Form Input</p>
+          <p>Form Input Evaluasi Kegiatan</p>
         </div>
         <div class="container">
           <form>
-            <div class="mb-3">
-              <label for="namaprogram" class="form-label"
-                >Nama Program Kegiatan</label
-              >
-              <input type="program" class="form-control" id="namaprogram1" />
-            </div>
-            <div class="mb-3">
-              <label for="tahunkegiatan" class="form-label"
-                >Tahun Kegiatan</label
-              >
-              <select
-                v-model="selectedYear"
-                type="tahun"
-                class="form-control"
-                id="tahunkegiatan1"
-                style="width: 1029px"
-              >
-                <option v-for="year in years" :key="year" :value="year">
-                  {{ year }}
-                </option>
-              </select>
+            <div class="row">
+              <div class="mb-3" style="margin-left: 20px">
+                <label for="namabidangprogram" class="form-label"
+                  >Nama Bidang Program</label
+                >
+                <div class="dropdown-with-addition">
+                  <select
+                    class="form-control"
+                    id="namabidangprogram1"
+                    @change="handleProgramChange"
+                    style="width: 705px; height: 38px"
+                  >
+                    <option value="">Pilih Bidang Program</option>
+                    <option value="PROGRAM KEPUSTAKAAN">
+                      PROGRAM KEPUSTAKAAN
+                    </option>
+                    <option value="PROGRAM INTELEKTUALITAS">
+                      PROGRAM INTELEKTUALITAS
+                    </option>
+                    <option value="PROGRAM EKOLITERASI">
+                      PROGRAM EKOLITERASI
+                    </option>
+                    <option value="SUPPORTING SYSTEM">SUPPORTING SYSTEM</option>
+                    <option
+                      value="__add__"
+                      style="text-align: center; color: #5897fb"
+                    >
+                      ---Tambah program lain----
+                    </option>
+                  </select>
+                  <input
+                    v-if="showAddInput"
+                    type="text"
+                    class="form-control"
+                    v-model="newProgram"
+                    placeholder="Masukkan Bidang Program Baru"
+                    style="width: 680px"
+                  />
+                </div>
+              </div>
+              <div class="mb-3">
+                <label for="bulan" class="form-label">Bulan</label>
+                <select
+                  v-model="selectedMonth"
+                  class="form-control"
+                  id="bulankegiatan1"
+                  style="width: 138px; margin-right: 20px"
+                >
+                  <option
+                    v-for="(month, index) in months"
+                    :key="index"
+                    :value="index + 1"
+                  >
+                    {{ month }}
+                  </option>
+                </select>
+              </div>
+              <div class="mb-3">
+                <label for="tahunkegiatan" class="form-label"
+                  >Tahun Kegiatan</label
+                >
+                <select
+                  v-model="selectedYear"
+                  class="form-control"
+                  id="tahunkegiatan1"
+                  style="width: 138px; margin-right: 20px"
+                >
+                  <option v-for="year in years" :key="year" :value="year">
+                    {{ year }}
+                  </option>
+                </select>
+              </div>
             </div>
             <div class="card-container1">
-              <div
-                class="card1 mb-3"
-                style="max-width: 1067px; max-height: 354"
-              >
-                <div class="form">
+              <div class="card1 mb-3" style="max-width: 1067px">
+                <div
+                  v-for="(entry, index) in formEntries"
+                  :key="index"
+                  class="form mb-3"
+                  style="
+                    background-color: #d9d9d9;
+                    padding: 16px;
+                    margin-bottom: 16px;
+                  "
+                >
                   <div class="mb-3">
-                    <label for="kpi" class="form-label">KPI</label>
+                    <label for="kpi" class="form-label">Program Kegiatan</label>
                     <input
-                      type="kpi"
+                      type="text"
                       class="form-control"
-                      id="kpi1"
-                      v-model="kpi"
+                      v-model="entry.programkegiatan"
+                      style="width: 960px; height: 47px"
                     />
-                  </div>
-                  <div class="mb-3">
-                    <label for="target" class="form-label">Target</label>
-                    <input
-                      type="target"
-                      class="form-control"
-                      id="target1"
-                      v-model="target"
-                    />
-                  </div>
-                  <div class="tombol">
-                    <button
-                      type="button"
-                      class="btn hapus-btn"
-                      style="
-                        display: none;
-                        background-color: #ff0000;
-                        margin-right: 14px;
-                      "
-                    >
-                      Hapus
-                    </button>
-                    <button type="button" class="btn tambah-btn">Tambah</button>
                   </div>
                 </div>
               </div>
@@ -128,14 +162,32 @@ import axios from "axios";
 export default {
   data() {
     return {
-      selectedYear: new Date().getFullYear(),
-      years: this.generateYears(),
+      months: [
+        "Januari",
+        "Februari",
+        "Maret",
+        "April",
+        "Mei",
+        "Juni",
+        "Juli",
+        "Agustus",
+        "September",
+        "Oktober",
+        "November",
+        "Desember",
+      ],
+      selectedMonth: new Date().getMonth() + 1, // Mengatur bulan saat ini sebagai nilai awal
+      selectedYear: new Date().getFullYear(), // Mengatur tahun saat ini sebagai nilai awal
+      years: this.generateYears(), // Menghasilkan daftar tahun
+      showAddInput: false,
       notificationMessage: "",
       notificationDetail: "",
       notificationType: "", // error, success
       isNotificationVisible: false,
+      newProgram: "",
       kpi: "",
       target: "",
+      formEntries: [{ kpi: "", target: "" }], // Initial form entry
     };
   },
   mounted() {
@@ -144,30 +196,28 @@ export default {
     cardContainer.addEventListener("click", this.handleButtonClick);
   },
   methods: {
-    handleButtonClick(event) {
-      if (event.target.classList.contains("tambah-btn")) {
-        const existingCard = document.querySelector(".card1");
-        const newCard = existingCard.cloneNode(true);
-        newCard
-          .querySelectorAll("input")
-          .forEach((input) => (input.value = ""));
-        const cardContainer = document.querySelector(".card-container1");
-        cardContainer.appendChild(newCard);
-        const cardContainers = document.querySelectorAll(".card1");
-        cardContainers.forEach((container) => {
-          const hapusButton = container.querySelector(".hapus-btn");
-          hapusButton.style.display =
-            cardContainers.length > 1 ? "inline-block" : "none";
-        });
-      } else if (event.target.classList.contains("hapus-btn")) {
-        event.target.closest(".card1").remove();
-        const cardContainers = document.querySelectorAll(".card1");
-        cardContainers.forEach((container) => {
-          const hapusButton = container.querySelector(".hapus-btn");
-          hapusButton.style.display =
-            cardContainers.length > 1 ? "inline-block" : "none";
-        });
+    handleProgramChange(event) {
+      if (event.target.value === "__add__") {
+        this.showAddInput = true;
+      } else {
+        this.showAddInput = false;
       }
+    },
+    addEntry() {
+      this.formEntries.push({ kpi: "", target: "" });
+    },
+    removeEntry(index) {
+      if (this.formEntries.length > 1) {
+        this.formEntries.splice(index, 1);
+      }
+    },
+    generateYears() {
+      const currentYear = new Date().getFullYear();
+      return Array.from({ length: 10 }, (v, i) => currentYear - i);
+    },
+    saveEntries() {
+      // Implement the save logic here
+      console.log("Saving entries:", this.formEntries);
     },
     closeNotification() {
       this.isNotificationVisible = false;
@@ -195,14 +245,6 @@ export default {
           this.notificationType = "error";
           this.isNotificationVisible = true;
         });
-    },
-    generateYears() {
-      const currentYear = new Date().getFullYear();
-      const years = [];
-      for (let i = currentYear; i >= currentYear - 3; i--) {
-        years.push(i);
-      }
-      return years;
     },
   },
   components: {
@@ -252,7 +294,7 @@ export default {
 }
 
 .card-container {
-  padding-left: 260px;
+  padding-left: 260px; /* Lebar sidebar + jarak antara sidebar dan kartu */
   padding-top: 33px;
   overflow-y: auto;
 }
@@ -314,22 +356,6 @@ form {
   font-weight: 700;
 }
 
-.card1 .tombol {
-  display: flex;
-  margin-top: 14px;
-  margin-right: 9px;
-}
-
-.card1 .tombol .btn {
-  background-color: #967c55;
-  font-size: 12px;
-  font-weight: bold;
-  height: 47px;
-  width: 104px;
-  color: white;
-  margin-bottom: 19px;
-}
-
 .tombol1 {
   display: flex;
   justify-content: flex-end;
@@ -342,6 +368,33 @@ form {
   font-weight: bolder;
   height: 47px;
   width: 104px;
+  color: white;
+}
+
+.form .row .tombolhapus {
+  margin-top: 45px;
+  margin-right: 16px;
+}
+
+.form .row .tombolhapus .btn {
+  background-color: red;
+  display: flex;
+  justify-content: center;
+  height: 47px;
+  width: 47px;
+  color: white;
+}
+
+.form .row .tomboltambah {
+  margin-top: 45px;
+}
+
+.form .row .tomboltambah .btn {
+  background-color: #967c55;
+  display: flex;
+  justify-content: center;
+  height: 47px;
+  width: 47px;
   color: white;
 }
 </style>

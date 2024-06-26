@@ -42,7 +42,7 @@
       </div>
       <div class="card mb-3" style="max-width: 1149px; max-height: fit-content">
         <div class="kepala">
-          <p>Form Input</p>
+          <p>Form Input Penerima Manfaat</p>
         </div>
         <div class="container">
           <form>
@@ -56,7 +56,7 @@
                     class="form-control"
                     id="namabidangprogram1"
                     @change="handleProgramChange"
-                    style="width: 750px; height: 38px"
+                    style="width: 705px; height: 38px"
                   >
                     <option value="">Pilih Bidang Program</option>
                     <option value="PROGRAM KEPUSTAKAAN">
@@ -82,9 +82,26 @@
                     class="form-control"
                     v-model="newProgram"
                     placeholder="Masukkan Bidang Program Baru"
-                    style="width: 750px"
+                    style="width: 680px"
                   />
                 </div>
+              </div>
+              <div class="mb-3">
+                <label for="bulan" class="form-label">Bulan</label>
+                <select
+                  v-model="selectedMonth"
+                  class="form-control"
+                  id="bulankegiatan1"
+                  style="width: 138px; margin-right: 20px"
+                >
+                  <option
+                    v-for="(month, index) in months"
+                    :key="index"
+                    :value="index + 1"
+                  >
+                    {{ month }}
+                  </option>
+                </select>
               </div>
               <div class="mb-3">
                 <label for="tahunkegiatan" class="form-label"
@@ -94,7 +111,7 @@
                   v-model="selectedYear"
                   class="form-control"
                   id="tahunkegiatan1"
-                  style="width: 250px; margin-right: 20px"
+                  style="width: 138px; margin-right: 20px"
                 >
                   <option v-for="year in years" :key="year" :value="year">
                     {{ year }}
@@ -114,39 +131,74 @@
                     margin-bottom: 16px;
                   "
                 >
+                  <div class="mb-3">
+                    <label for="kategori" class="form-label">Kategori</label>
+                    <select
+                      v-model="selectedYear"
+                      class="form-control"
+                      id="tahunkegiatan1"
+                      style="width: 960px; height: 47px; margin-right: 20px"
+                    >
+                      <option v-for="year in years" :key="year" :value="year">
+                        {{ year }}
+                      </option>
+                    </select>
+                  </div>
+                  <div class="mb-3">
+                    <label for="rutinitas" class="form-label">Rutinitas</label>
+                    <input
+                      type="text"
+                      class="form-control"
+                      v-model="entry.rutinitas"
+                      style="width: 960px; height: 47px"
+                    />
+                  </div>
+                  <div class="mb-3">
+                    <label for="penyaluran" class="form-label"
+                      >Penyaluran</label
+                    >
+                    <input
+                      type="text"
+                      class="form-control"
+                      v-model="entry.penyaluran"
+                      style="width: 960px; height: 47px"
+                    />
+                  </div>
                   <div class="row">
                     <div class="mb-3">
-                      <label for="kpi" class="form-label">KPI</label>
+                      <label for="rencana" class="form-label">Rencana</label>
                       <input
                         type="text"
                         class="form-control"
-                        v-model="entry.kpi"
-                        style="width: 410px; height: 47px"
+                        v-model="entry.rencana"
+                        style="width: 470px; height: 47px"
                       />
                     </div>
                     <div class="mb-3">
-                      <label for="target" class="form-label">Target</label>
+                      <label for="realisasi" class="form-label"
+                        >Realisasi</label
+                      >
                       <input
                         type="text"
                         class="form-control"
-                        v-model="entry.target"
-                        style="width: 410px; height: 47px"
+                        v-model="entry.realisasi"
+                        style="width: 470px; height: 47px"
                       />
                     </div>
-                    <div class="tombolhapus">
-                      <button
-                        type="button"
-                        class="btn"
-                        @click="removeEntry(index)"
-                      >
-                        <b-icon-trash font-scale="2"></b-icon-trash>
-                      </button>
-                    </div>
-                    <div class="tomboltambah">
-                      <button type="button" class="btn" @click="addEntry">
-                        <b-icon-plus-lg font-scale="2"></b-icon-plus-lg>
-                      </button>
-                    </div>
+                  </div>
+                  <div class="tombol">
+                    <button
+                      type="button"
+                      class="btn hapus-btn"
+                      style="
+                        display: none;
+                        background-color: #ff0000;
+                        margin-right: 14px;
+                      "
+                    >
+                      Hapus
+                    </button>
+                    <button type="button" class="btn tambah-btn">Tambah</button>
                   </div>
                 </div>
               </div>
@@ -170,6 +222,21 @@ import axios from "axios";
 export default {
   data() {
     return {
+      months: [
+        "Januari",
+        "Februari",
+        "Maret",
+        "April",
+        "Mei",
+        "Juni",
+        "Juli",
+        "Agustus",
+        "September",
+        "Oktober",
+        "November",
+        "Desember",
+      ],
+      selectedMonth: new Date().getMonth() + 1, // Mengatur bulan saat ini sebagai nilai awal
       selectedYear: new Date().getFullYear(), // Mengatur tahun saat ini sebagai nilai awal
       years: this.generateYears(), // Menghasilkan daftar tahun
       showAddInput: false,
@@ -183,7 +250,48 @@ export default {
       formEntries: [{ kpi: "", target: "" }], // Initial form entry
     };
   },
+  mounted() {
+    // Attach event listener to the parent element for both Tambah and Hapus buttons
+    const cardContainer = document.querySelector(".card-container1");
+    cardContainer.addEventListener("click", this.handleButtonClick);
+  },
   methods: {
+    handleButtonClick(event) {
+      // Check if the clicked element is either "Tambah" or "Hapus" button
+      if (event.target.classList.contains("tambah-btn")) {
+        // Clone the existing card template
+        const existingCard = document.querySelector(".card1");
+        const newCard = existingCard.cloneNode(true);
+
+        // Clear input values of the new card
+        newCard
+          .querySelectorAll("input")
+          .forEach((input) => (input.value = ""));
+
+        // Add the new card below the existing ones
+        const cardContainer = document.querySelector(".card-container1");
+        cardContainer.appendChild(newCard);
+
+        // Show "Hapus" button only in duplicated containers
+        const cardContainers = document.querySelectorAll(".card1");
+        cardContainers.forEach((container) => {
+          const hapusButton = container.querySelector(".hapus-btn");
+          hapusButton.style.display =
+            cardContainers.length > 1 ? "inline-block" : "none";
+        });
+      } else if (event.target.classList.contains("hapus-btn")) {
+        // Remove the parent card when "Hapus" button is clicked
+        event.target.closest(".card1").remove();
+
+        // Hide "Hapus" button if there's only one container left
+        const cardContainers = document.querySelectorAll(".card1");
+        cardContainers.forEach((container) => {
+          const hapusButton = container.querySelector(".hapus-btn");
+          hapusButton.style.display =
+            cardContainers.length > 1 ? "inline-block" : "none";
+        });
+      }
+    },
     handleProgramChange(event) {
       if (event.target.value === "__add__") {
         this.showAddInput = true;

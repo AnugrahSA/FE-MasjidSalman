@@ -10,24 +10,20 @@
       <form @submit.prevent="onSubmit">
         <div class="input-container">
           <input
-            filled
             v-model="email"
-            label="Email"
             type="email"
-            :rules="[(val) => !!val || 'Field is required']"
-            placeholder="email"
+            placeholder="Email"
             autocomplete="username"
+            required
           />
         </div>
         <div class="input-container">
           <input
-            filled
             v-model="password"
-            label="Password"
             :type="showPassword ? 'text' : 'password'"
             placeholder="Enter your password"
-            :rules="[(val) => !!val || 'Field is required']"
             autocomplete="current-password"
+            required
           />
           <b-icon-eye-fill
             style="
@@ -44,17 +40,18 @@
             class="form-check-input"
             type="checkbox"
             v-model="rememberMe"
-            label="Remember me"
             id="flexCheckDefault"
           />
           <label class="form-check-label" for="flexCheckDefault">
             Remember Me
           </label>
         </div>
-        <button type="submit" :loading="isLoading" label="Login" unelevated>
-          Masuk
+        <button type="submit" :disabled="isLoading">
+          <span v-if="isLoading">Loading...</span>
+          <span v-else>Masuk</span>
         </button>
       </form>
+      <div v-if="errorMessage" class="error-message">{{ errorMessage }}</div>
       <div class="akun">
         Tidak punya akun? <router-link to="/register">Daftar</router-link>
       </div>
@@ -67,13 +64,14 @@
 
 <script setup lang="ts">
 import { onMounted, ref } from "vue";
-import axios from "@/lib/axios";
+import axios from "@/lib/axios"; // Sesuaikan path sesuai struktur proyek Anda
 
 const email = ref("");
 const password = ref("");
 const rememberMe = ref(false);
 const showPassword = ref(false);
 const isLoading = ref(false);
+const errorMessage = ref("");
 
 const togglePasswordVisibility = () => {
   showPassword.value = !showPassword.value;
@@ -81,6 +79,8 @@ const togglePasswordVisibility = () => {
 
 const onSubmit = async () => {
   isLoading.value = true;
+  errorMessage.value = "";
+
   const form = {
     email: email.value,
     password: password.value,
@@ -95,22 +95,22 @@ const onSubmit = async () => {
         throw new Error(result.data);
       }
       sessionStorage.setItem("user", JSON.stringify(result.data.user));
-      sessionStorage.setItem(
-        "bearer",
-        JSON.stringify(result.data.access_token)
-      );
+      sessionStorage.setItem("bearer", result.data.access_token);
       window.location.href = "/profile";
     } catch (error) {
-      console.error("Error making the request:", error.toJSON());
-      // Tampilkan pesan error kepada pengguna
-      // Misalnya, update state untuk menampilkan pesan error di UI
+      console.error(
+        "Error saat melakukan permintaan:",
+        error.response?.data || error.message
+      );
+      errorMessage.value =
+        error.response?.data.message || "Login gagal. Periksa kredensial Anda.";
     }
   } catch (error) {
-    console.error("Error with CSRF or network:", error);
-    // Tampilkan pesan error umum atau khusus terkait CSRF/network
+    console.error("Error dengan CSRF atau jaringan:", error);
+    errorMessage.value = "Kesalahan jaringan. Silakan coba lagi nanti.";
+  } finally {
+    isLoading.value = false;
   }
-
-  isLoading.value = false;
 };
 
 onMounted(() => {
@@ -118,44 +118,6 @@ onMounted(() => {
     window.location.href = "/profile";
   }
 });
-// export default {
-//   data() {
-//     return {
-//       showPassword: false,
-//       email: "",
-//       password: "",
-//     };
-//   },
-//   methods: {
-//     togglePasswordVisibility() {
-//       this.showPassword = !this.showPassword;
-//     },
-//     login() {
-//       // Implementasi logika login di sini menggunakan data email dan password
-//       // Misalnya, Anda dapat menggunakan Axios untuk mengirim permintaan ke backend
-//       axios
-//         .post("/api/login", { email: this.email, password: this.password })
-//         .then((response) => {
-//           // Cek jika respons dari backend adalah sukses atau tidak
-//           if (response.data.success) {
-//             // Jika sukses, Anda dapat melakukan sesuatu seperti redirect ke halaman utama
-//             // atau menyimpan token akses di local storage
-//             console.log("Login berhasil!");
-//           } else {
-//             // Jika respons menunjukkan login gagal, atur pesan kesalahan
-//             this.loginError = response.data.message;
-//           }
-//         })
-//         .catch((error) => {
-//           console.error("Error:", error);
-//           // Misalnya, tampilkan pesan kesalahan umum jika terjadi kesalahan saat mengirim permintaan
-//           this.loginError =
-//             "Terjadi kesalahan saat melakukan login. Silakan coba lagi.";
-//           // Handle error di sini
-//         });
-//     },
-//   },
-// };
 </script>
 
 <style scoped>
@@ -165,11 +127,14 @@ onMounted(() => {
   display: flex;
   justify-content: center;
   align-items: center;
+  padding: 20px;
+  box-sizing: border-box;
 }
 
 .input-container {
   background: #fff;
-  width: 532px;
+  width: 100%;
+  max-width: 532px;
   height: 67px;
   border-radius: 13px;
   padding: 10px 20px;
@@ -180,11 +145,11 @@ onMounted(() => {
 
 .form-check {
   display: flex;
-  align-items: center; /* Menyamakan tinggi */
-  justify-content: flex-start; /* Memposisikan ke kiri */
+  align-items: center;
+  justify-content: flex-start;
 }
 .form-check .form-check-label {
-  font-size: 12;
+  font-size: 12px;
   font-weight: 600;
 }
 
@@ -200,19 +165,24 @@ onMounted(() => {
 
 button {
   background-color: #967c55;
-  width: 532px;
+  width: 100%;
+  max-width: 532px;
   height: 67px;
   border-radius: 13px;
   color: white;
   padding: 10px 20px;
   border: none;
-  border-radius: 4px;
   cursor: pointer;
   font-size: 16px;
   margin-top: 29px;
   font-size: 20px;
   font-weight: bold;
-  border-radius: 13px;
+}
+
+button:disabled {
+  background-color: #967c55;
+  opacity: 0.6;
+  cursor: not-allowed;
 }
 
 .background-image {
@@ -221,7 +191,7 @@ button {
   left: 0;
   right: 0;
   bottom: 0;
-  background-image: url("E:\Materi\TA\Website\salmanitb\src\assets\background.jpg");
+  background-image: url("E:\\Materi\\TA\\Website\\salmanitb\\src\\assets\\background.jpg");
   background-size: cover;
   z-index: -1;
 }
@@ -242,11 +212,11 @@ p {
 
 .login-card {
   background-color: white;
-  width: 630px;
-  height: 599px;
-  border-radius: 15px;
+  width: 100%;
+  max-width: 630px;
   padding: 20px;
-  margin-left: 44px;
+  border-radius: 15px;
+  box-sizing: border-box;
   box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
   text-align: center;
 }
@@ -262,5 +232,11 @@ p {
   font-weight: 600;
   font-size: 16px;
   margin-top: 11px;
+}
+
+.error-message {
+  color: red;
+  font-size: 14px;
+  margin-top: 10px;
 }
 </style>

@@ -3,19 +3,46 @@
     <div class="background-image"></div>
     <div class="login-card">
       <h2>Lupa Password</h2>
-      <p>
-        Silahkan masukkan email anda untuk dapat dikirim link reset password
-      </p>
-      <div class="input-container">
-        <input v-model="email" type="text" id="email" placeholder="Email" />
+      <p>Silahkan masukan email anda untuk dapat dikirim link reset password</p>
+      <form @submit.prevent="onSubmit">
+        <div class="input-container">
+          <input
+            v-model="email"
+            type="email"
+            placeholder="Email"
+            autocomplete="username"
+            required
+          />
+        </div>
+
+        <button type="submit" :disabled="isLoading">
+          <span v-if="isLoading">Loading...</span>
+          <span v-else>Masuk</span>
+        </button>
+      </form>
+      <div v-if="errorMessage" class="error-message">{{ errorMessage }}</div>
+      <div class="akun">
+        Tidak punya akun? <router-link to="/register">Daftar</router-link>
       </div>
-      <button @click="login">Masuk</button>
+      <div class="lupa">
+        <router-link to="/lupa" style="color: red">Lupa Password</router-link>
+      </div>
     </div>
   </div>
 </template>
 
-<script>
-export default {};
+<script setup lang="ts">
+import { ref } from "vue";
+// import axios from "@/lib/axios"; // Sesuaikan path sesuai struktur proyek Anda
+
+const email = ref("");
+const isLoading = ref(false);
+const errorMessage = ref("");
+
+const onSubmit = async () => {
+  isLoading.value = true;
+  errorMessage.value = "";
+};
 </script>
 
 <style scoped>
@@ -25,17 +52,30 @@ export default {};
   display: flex;
   justify-content: center;
   align-items: center;
+  padding: 20px;
+  box-sizing: border-box;
 }
 
 .input-container {
   background: #fff;
-  width: 532px;
+  width: 100%;
+  max-width: 532px;
   height: 67px;
   border-radius: 13px;
-  padding: 10px 20 px;
+  padding: 10px 20px;
   margin: 13px auto;
   display: flex;
   align-items: center;
+}
+
+.form-check {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+}
+.form-check .form-check-label {
+  font-size: 12px;
+  font-weight: 600;
 }
 
 .input-container input {
@@ -50,19 +90,24 @@ export default {};
 
 button {
   background-color: #967c55;
-  width: 532px;
+  width: 100%;
+  max-width: 532px;
   height: 67px;
   border-radius: 13px;
   color: white;
   padding: 10px 20px;
   border: none;
-  border-radius: 4px;
   cursor: pointer;
   font-size: 16px;
-  margin-top: 39px;
+  margin-top: 29px;
   font-size: 20px;
   font-weight: bold;
-  border-radius: 13px;
+}
+
+button:disabled {
+  background-color: #967c55;
+  opacity: 0.6;
+  cursor: not-allowed;
 }
 
 .background-image {
@@ -71,7 +116,7 @@ button {
   left: 0;
   right: 0;
   bottom: 0;
-  background-image: url("E:\Materi\TA\Website\salmanitb\src\assets\background.jpg");
+  background-image: url("E:\\Materi\\TA\\Website\\salmanitb\\src\\assets\\background.jpg");
   background-size: cover;
   z-index: -1;
 }
@@ -92,12 +137,31 @@ p {
 
 .login-card {
   background-color: white;
-  width: 630px;
-  height: 439px;
-  border-radius: 15px;
+  width: 100%;
+  max-width: 630px;
   padding: 20px;
-  margin-left: 44px;
+  border-radius: 15px;
+  box-sizing: border-box;
   box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
   text-align: center;
+}
+
+.akun {
+  margin-top: 22px;
+  font-size: 16px;
+  font-weight: 600;
+}
+
+.lupa {
+  color: red;
+  font-weight: 600;
+  font-size: 16px;
+  margin-top: 11px;
+}
+
+.error-message {
+  color: red;
+  font-size: 14px;
+  margin-top: 10px;
 }
 </style>
