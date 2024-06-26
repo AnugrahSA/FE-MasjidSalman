@@ -1,7 +1,9 @@
 import Axios from "axios";
 
+// Akses VUE_APP_BACKEND_URL dari .env, dengan fallback ke URL default jika tidak ditemukan
 const axios = Axios.create({
-  baseURL: process.env.BACKEND_URL ?? "http://localhost:8000",
+  baseURL:
+    process.env.VUE_APP_BACKEND_URL ?? "https://salimapi.admfirst.my.id/",
   timeout: 60000,
   withCredentials: true,
   withXSRFToken: true,
