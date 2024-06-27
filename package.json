@@ -1,17 +1,18 @@
 {
-  "name": "salmanitb",
+  "name": "masjiditb",
   "version": "0.1.0",
   "private": true,
   "scripts": {
+    "dev": "vue-cli-service serve --port 443 --https --cert ./certs/localhost300-cert.crt --key ./certs/localhost3000-key.pem --host dashboard.admfirst.my.id",
     "serve": "vue-cli-service serve",
     "build": "vue-cli-service build",
     "lint": "vue-cli-service lint"
   },
   "dependencies": {
-    "@quasar/extras": "^1.16.11",
-    "axios": "^1.6.8",
+    "axios": "^1.7.2",
     "bootstrap-vue": "^2.23.1",
-    "core-js": "^3.8.3",
+    "core-js": "^3.37.1",
+    "dotenv": "^16.4.5",
     "jquery": "^3.7.1",
     "vue": "^2.6.14",
     "vue-router": "^3.5.1",
