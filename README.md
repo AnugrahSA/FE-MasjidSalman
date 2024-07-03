@@ -1,4 +1,4 @@
-# salmanitb
+# masjiditb
 
 ## Project setup
 ```
