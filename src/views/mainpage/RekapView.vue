@@ -6,81 +6,254 @@
           <p @click="goBack">
             <b-icon-arrow-left-circle-fill
               style="margin-right: 26px"
-            ></b-icon-arrow-left-circle-fill
-            >Laporan / Laporan Rekap
+            ></b-icon-arrow-left-circle-fill>
+            Laporan / Laporan Rekap
           </p>
         </div>
-        <!-- Tambahkan elemen tabel di bawah -->
         <div class="table-container">
           <table class="table">
             <thead>
               <tr>
-                <th>No</th>
-                <th>Nama Program - Kegiatan</th>
-                <th style="width: 20%">Target</th>
-                <th>Jan</th>
-                <th>Feb</th>
-                <th>Mar</th>
-                <th>Apr</th>
-                <th>Mei</th>
-                <th>Jun</th>
-                <th>Jul</th>
-                <th>Agust</th>
-                <th>Sept</th>
-                <th>Okt</th>
-                <th>Nov</th>
-                <th>Des</th>
+                <th style="font-weight: bold">No</th>
+                <th style="font-weight: bold; width: 200px">
+                  Nama Program-Kegiatan
+                </th>
+                <th style="font-weight: bold">Target</th>
+                <th style="font-weight: bold">Jan</th>
+                <th style="font-weight: bold">Feb</th>
+                <th style="font-weight: bold">Mar</th>
+                <th style="font-weight: bold">Apr</th>
+                <th style="font-weight: bold">Mei</th>
+                <th style="font-weight: bold">Jun</th>
+                <th style="font-weight: bold">Jul</th>
+                <th style="font-weight: bold">Agust</th>
+                <th style="font-weight: bold">Sep</th>
+                <th style="font-weight: bold">Okt</th>
+                <th style="font-weight: bold">Nov</th>
+                <th style="font-weight: bold">Des</th>
               </tr>
             </thead>
             <tbody>
-              <template v-if="programRekap.length === 0">
-                <tr>
-                  <td colspan="15" class="text-center">Data masih kosong</td>
-                </tr>
-              </template>
-              <template v-else>
-                <!-- Isi tabel dapat diperoleh dari data program yang dipilih -->
-                <tr v-for="(program, index) in programRekap" :key="index">
-                  <td>{{ program.no }}</td>
-                  <td>{{ program.namaprogram }}</td>
-                  <td>{{ program.target }}</td>
-                  <td>{{ program.jan }}</td>
-                  <td>{{ program.feb }}</td>
-                  <td>{{ program.mar }}</td>
-                  <td>{{ program.apr }}</td>
-                  <td>{{ program.mei }}</td>
-                  <td>{{ program.jun }}</td>
-                  <td>{{ program.jul }}</td>
-                  <td>{{ program.agust }}</td>
-                  <td>{{ program.sept }}</td>
-                  <td>{{ program.okt }}</td>
-                  <td>{{ program.nov }}</td>
-                  <td>{{ program.des }}</td>
-                </tr>
-              </template>
+              <tr v-for="item in data" :key="item.key">
+                <td>{{ item.id }}</td>
+                <td>{{ item.nama }}</td>
+                <td>{{ item.target }}</td>
+                <td>{{ item.jan }}</td>
+                <td>{{ item.feb }}</td>
+                <td>{{ item.mar }}</td>
+                <td>{{ item.apr }}</td>
+                <td>{{ item.mei }}</td>
+                <td>{{ item.jun }}</td>
+                <td>{{ item.jul }}</td>
+                <td>{{ item.august }}</td>
+                <td>{{ item.sep }}</td>
+                <td>{{ item.oct }}</td>
+                <td>{{ item.nov }}</td>
+                <td>{{ item.dec }}</td>
+              </tr>
             </tbody>
           </table>
         </div>
-        <!-- Akhir dari elemen tabel -->
       </div>
     </div>
   </div>
 </template>
 
 <script>
+import axios from "@/lib/axios";
 export default {
+  data() {
+    return {
+      data: [], // Menyimpan data yang digabungkan dari ketiga API
+    };
+  },
   methods: {
     goBack() {
       // Fungsi ini akan mengarahkan pengguna kembali ke halaman sebelumnya
       this.$router.go(-1); // Menggunakan Vue Router untuk navigasi kembali
     },
+    async fetchData() {
+      try {
+        // Ambil data dari ketiga API
+        const [response1, response2, response3] = await Promise.all([
+          axios.get("/api/custom/RKAKPI"),
+          axios.get("/api/keyPerformanceIndicator"),
+          axios.get("/api/itemKegiatanRKA"),
+        ]);
+
+        const dataRKAKPI = response1.data;
+        const dataKPI = response2.data.data; // Akses array data dari objek dataKPI
+        const dataItemKegiatanRKA = response3.data.data; // Akses array data dari objek dataItemKegiatanRKA
+
+        // Logging all data received
+        console.log("dataRKAKPI:", dataRKAKPI);
+        console.log("dataKPI:", dataKPI);
+        console.log("dataItemKegiatanRKA:", dataItemKegiatanRKA);
+
+        // Check if data received are arrays
+        if (!Array.isArray(dataRKAKPI)) {
+          throw new Error("Data from RKAKPI API is not an array");
+        }
+        if (!Array.isArray(dataKPI)) {
+          throw new Error("Data from KPI API is not an array");
+        }
+        if (!Array.isArray(dataItemKegiatanRKA)) {
+          throw new Error("Data from itemKegiatanRKA API is not an array");
+        }
+
+        // Sort dataKPI by ID
+        dataKPI.sort((a, b) => a.id - b.id);
+
+        let mergedData = [];
+
+        // Gabungkan data berdasarkan ID dan id_program_kegiatan_kpi
+        dataRKAKPI.forEach((item) => {
+          const targets = dataKPI.filter(
+            (kpi) => kpi.id_program_kegiatan_kpi === item.id
+          );
+          const itemKegiatan = dataItemKegiatanRKA.find(
+            (kegiatan) => kegiatan.id === item.id
+          );
+
+          const getMonthlyValue = (month, kegiatan) => {
+            return kegiatan && kegiatan[`dana_${month}`]
+              ? kegiatan.nilai_satuan * kegiatan.quantity
+              : "0";
+          };
+
+          const jan = getMonthlyValue("jan", itemKegiatan);
+          const feb = getMonthlyValue("feb", itemKegiatan);
+          const mar = getMonthlyValue("mar", itemKegiatan);
+          const apr = getMonthlyValue("apr", itemKegiatan);
+          const mei = getMonthlyValue("mei", itemKegiatan);
+          const jun = getMonthlyValue("jun", itemKegiatan);
+          const jul = getMonthlyValue("jul", itemKegiatan);
+          const august = getMonthlyValue("aug", itemKegiatan);
+          const sep = getMonthlyValue("sep", itemKegiatan);
+          const oct = getMonthlyValue("oct", itemKegiatan);
+          const nov = getMonthlyValue("nov", itemKegiatan);
+          const dec = getMonthlyValue("dec", itemKegiatan);
+
+          if (targets.length > 0) {
+            targets.forEach((target) => {
+              mergedData.push({
+                id: item.id,
+                nama: item.nama,
+                target: target.target,
+                jan: jan,
+                feb: feb,
+                mar: mar,
+                apr: apr,
+                mei: mei,
+                jun: jun,
+                jul: jul,
+                august: august,
+                sep: sep,
+                oct: oct,
+                nov: nov,
+                dec: dec,
+                key: `${item.id}-${target.target}`,
+              });
+            });
+          } else {
+            mergedData.push({
+              id: item.id,
+              nama: item.nama,
+              target: "Tidak ada target",
+              jan: jan,
+              feb: feb,
+              mar: mar,
+              apr: apr,
+              mei: mei,
+              jun: jun,
+              jul: jul,
+              august: august,
+              sep: sep,
+              oct: oct,
+              nov: nov,
+              dec: dec,
+              key: `${item.id}-no-target`,
+            });
+          }
+        });
+
+        // Tambahkan data KPI yang tidak ada di RKAKPI
+        dataKPI.forEach((kpi) => {
+          if (
+            !dataRKAKPI.find((item) => item.id === kpi.id_program_kegiatan_kpi)
+          ) {
+            const itemKegiatan = dataItemKegiatanRKA.find(
+              (kegiatan) => kegiatan.id === kpi.id_program_kegiatan_kpi
+            );
+
+            const getMonthlyValue = (month, kegiatan) => {
+              return kegiatan && kegiatan[`dana_${month}`]
+                ? kegiatan.nilai_satuan * kegiatan.quantity
+                : "Tidak ada data";
+            };
+
+            const jan = getMonthlyValue("jan", itemKegiatan);
+            const feb = getMonthlyValue("feb", itemKegiatan);
+            const mar = getMonthlyValue("mar", itemKegiatan);
+            const apr = getMonthlyValue("apr", itemKegiatan);
+            const mei = getMonthlyValue("mei", itemKegiatan);
+            const jun = getMonthlyValue("jun", itemKegiatan);
+            const jul = getMonthlyValue("jul", itemKegiatan);
+            const august = getMonthlyValue("aug", itemKegiatan);
+            const sep = getMonthlyValue("sep", itemKegiatan);
+            const oct = getMonthlyValue("oct", itemKegiatan);
+            const nov = getMonthlyValue("nov", itemKegiatan);
+            const dec = getMonthlyValue("dec", itemKegiatan);
+
+            mergedData.push({
+              id: kpi.id_program_kegiatan_kpi,
+              nama: "Tidak ada nama", // Placeholder if nama not available
+              target: kpi.target,
+              jan: jan,
+              feb: feb,
+              mar: mar,
+              apr: apr,
+              mei: mei,
+              jun: jun,
+              jul: jul,
+              august: august,
+              sep: sep,
+              oct: oct,
+              nov: nov,
+              dec: dec,
+              key: `${kpi.id_program_kegiatan_kpi}-${kpi.target}`,
+            });
+          }
+        });
+
+        // Sort mergedData by ID
+        mergedData.sort((a, b) => a.id - b.id);
+
+        // Handle duplicate IDs and names
+        let previousID = "";
+        let previousNama = "";
+        mergedData = mergedData.map((item) => {
+          if (item.id === previousID) {
+            item.id = "";
+          } else {
+            previousID = item.id;
+          }
+          if (item.nama === previousNama) {
+            item.nama = "";
+          } else {
+            previousNama = item.nama;
+          }
+          return item;
+        });
+
+        this.data = mergedData; // Menyimpan data yang telah digabungkan
+      } catch (error) {
+        console.error("Error fetching data:", error.message);
+      }
+    },
   },
-  data() {
-    return {
-      programRekap: [
-        // Di sini Anda dapat menambahkan data rekap atau mengambilnya dari sumber eksternal
-      ],
-    };
+  mounted() {
+    this.fetchData(); // Memanggil fungsi fetchData ketika komponen dimuat
   },
 };
 </script>

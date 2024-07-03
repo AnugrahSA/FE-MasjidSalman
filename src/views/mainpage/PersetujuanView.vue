@@ -130,7 +130,7 @@
   </div>
 </template>
 
-<script lang="ts">
+<script>
 import Sidebar from "@/components/SidebarView.vue";
 import axios from "@/lib/axios";
 
@@ -243,7 +243,6 @@ export default {
 }
 
 .confirmation-buttons button:first-child {
-  background-color: red;
   color: white;
 }
 

@@ -148,7 +148,7 @@ export default {
       selectedYear: new Date().getFullYear(),
       years: this.generateYears(),
       activityNames: [], // Untuk menyimpan data kegiatan yang diambil dari API
-      kpiNames: [], // Untuk menyimpan data indikator dan target dari API KPI
+      keyPerformanceIndicators: [], // Untuk menyimpan data indikator dan target dari API KPI
     };
   },
   computed: {
@@ -161,7 +161,7 @@ export default {
   mounted() {
     this.fetchProgramOptions();
     this.fetchActivityNames(); // Mengambil data kegiatan saat komponen dimuat
-    this.fetchkpiNames(); // Mengambil data KPI saat komponen dimuat
+    this.fetchKeyPerformanceIndicators(); // Mengambil data KPI saat komponen dimuat
   },
   methods: {
     async fetchProgramOptions() {
@@ -181,7 +181,7 @@ export default {
         this.activityNames = [{ nama: "Error fetching data" }];
       }
     },
-    async fetchkpiNames() {
+    async fetchKeyPerformanceIndicators() {
       try {
         const response = await axios.get("/api/keyPerformanceIndicator");
         this.keyPerformanceIndicators = response.data; // Mengisi keyPerformanceIndicators dengan hasil dari API KPI

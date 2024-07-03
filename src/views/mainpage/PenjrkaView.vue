@@ -9,7 +9,7 @@
         <div class="container text-center">
           <div class="row">
             <div class="teks">Program</div>
-            <div class="dropdown">
+            <div class="dropdown1">
               <b-dropdown
                 id="dropdown-1"
                 class="m-md-2"
@@ -20,10 +20,10 @@
               >
                 <b-dropdown-item
                   @click="selectOption(index)"
-                  v-for="(option, index) in options"
+                  v-for="(option, index) in programOptions"
                   :key="index"
                 >
-                  {{ option }}
+                  {{ option.nama }}
                 </b-dropdown-item>
               </b-dropdown>
             </div>
@@ -38,7 +38,7 @@
             </div>
             <div class="tahun">Tahun</div>
             <div class="tahun1">
-              <div class="dropdown">
+              <div class="dropdown1">
                 <select
                   v-model="selectedYear"
                   class="m-md-2"
@@ -50,151 +50,115 @@
                 </select>
               </div>
             </div>
-          </div>
-        </div>
-        <div class="pilihan">
-          <button
-            type="button"
-            class="btn penjelasan-btn"
-            :class="{ active: isPenjelasanActive }"
-            @click="toggleActive('penjelasan')"
-          >
-            Penjelasan
-          </button>
-          <button
-            type="button"
-            class="btn resume-btn"
-            :class="{ active: isResumeActive }"
-            @click="toggleActive('resume')"
-          >
-            Resume
-          </button>
-        </div>
-        <div class="box-text">
-          <p class="text-area">{{ selectedOption }}</p>
-          <div class="additional-text">
-            <p class="total">Nilai Total : Rp</p>
-            <p class="nilai">100.000.000</p>
-            <div class="container-box">
-              <button type="button" class="btn" @click="goToInputPage">
-                <b-icon-plus></b-icon-plus>
+            <div class="pilihan">
+              <button
+                type="button"
+                class="btn penjelasan-btn"
+                :class="{ active: isPenjelasanActive }"
+                @click="toggleActive('penjelasan')"
+              >
+                Penjelasan
               </button>
+              <button
+                type="button"
+                class="btn resume-btn"
+                :class="{ active: isResumeActive }"
+                @click="toggleActive('resume')"
+              >
+                Resume
+              </button>
+            </div>
+            <div class="text-box">
+              <p class="text-area">{{ selectedOption }}</p>
+              <div class="additional-text">
+                <p class="total">Nilai Total :</p>
+                <p class="nilai">{{ formatCurrency(totalNilai) }}</p>
+                <div class="container-box">
+                  <button type="button" class="btn" @click="goToInputPage">
+                    <b-icon-plus></b-icon-plus>
+                  </button>
+                </div>
+              </div>
             </div>
           </div>
         </div>
-        <div class="tabel-container1">
-          <table class="tabel" v-if="!showResumeTable">
+        <div class="table-container1" v-if="isPenjelasanActive">
+          <table class="tabel">
             <thead>
               <tr>
-                <th style="width: 40px">id</th>
-                <!-- Set lebar kolom No. -->
-                <th>nama</th>
-                <th>deskripsi</th>
-                <th>output</th>
-                <th>Nominal Anggaran</th>
-                <th style="text-align: center"></th>
+                <th style="width: 40px; font-weight: bold">No.</th>
+                <th style="width: 160px; font-weight: bold">
+                  Program-Kegiatan
+                </th>
+                <th style="width: 250px; font-weight: bold">
+                  Deskripsi Singkat
+                </th>
+                <th style="width: 250px; font-weight: bold">Output/Keluaran</th>
+                <th style="width: 275px; font-weight: bold">
+                  Nominal Anggaran
+                </th>
+                <th style="width: 50px; text-align: center"></th>
               </tr>
             </thead>
             <tbody>
-              <template
-                v-if="
-                  programAnggaranByOption &&
-                  programAnggaranByOption.length === 0
-                "
-              >
-                <tr>
-                  <td colspan="6" class="text-center">Data masih kosong</td>
-                </tr>
-              </template>
-              <template v-else>
-                <!-- Isi tabel dapat diperoleh dari data program yang dipilih -->
-                <tr
-                  v-for="(program, index) in programAnggaranByOption"
-                  :key="index"
-                >
-                  <td>{{ program.id }}</td>
-                  <td>
-                    <template v-if="!program.isEditing">{{
-                      program.nama
-                    }}</template>
-                    <input type="text" v-model="program.nama" v-else />
-                  </td>
-                  <td>
-                    <template v-if="!program.isEditing">{{
-                      program.deskripsi
-                    }}</template>
-                    <input type="text" v-model="program.deskripsi" v-else />
-                  </td>
-                  <td>
-                    <template v-if="!program.isEditing">{{
-                      program.output
-                    }}</template>
-                    <input type="text" v-model="program.output" v-else />
-                  </td>
-                  <td>
-                    <template v-if="!program.isEditing">{{
-                      program.anggaran
-                    }}</template>
-                    <input type="text" v-model="program.anggaran" v-else />
-                  </td>
-                  <td style="text-align: center">
-                    <!-- Tombol Edit -->
-                    <button
-                      type="button"
-                      class="edit-btn"
-                      @click="editProgram(program)"
-                    >
-                      <b-icon
-                        :icon="
-                          program.isEditing ? 'save-fill' : 'pencil-square'
-                        "
-                      ></b-icon>
-                    </button>
-                  </td>
-                </tr>
-              </template>
+              <tr v-for="item in filteredData" :key="item.id">
+                <td>{{ item.id }}</td>
+                <td>{{ item.nama }}</td>
+                <td>{{ item.deskripsi }}</td>
+                <td>{{ item.output }}</td>
+                <td>{{ formatCurrency(item.total_anggaran) }}</td>
+                <td style="text-align: center">
+                  <button
+                    type="button"
+                    class="edit-btn"
+                    @click="editProgram(item)"
+                  >
+                    <b-icon
+                      :icon="item.isEditing ? 'save-fill' : 'pencil-square'"
+                    ></b-icon>
+                  </button>
+                </td>
+              </tr>
             </tbody>
           </table>
-
-          <table class="tabel resume-table" v-else>
+        </div>
+        <div class="table-container1" v-if="isResumeActive">
+          <table class="tabel">
             <thead>
               <tr>
-                <th>No.</th>
-                <th>Program-Kegiatan</th>
-                <th>Pusat</th>
-                <th>RAS</th>
-                <th>Kepesertaan</th>
-                <th>Pihak Ketiga</th>
-                <th>Wakaf Salman</th>
-                <th>Total Anggaran</th>
+                <th style="font-weight: bold; width: 40px">No.</th>
+                <th style="font-weight: bold; width: calc((100%) / 7)">
+                  Program-Kegiatan
+                </th>
+                <th style="font-weight: bold; width: calc((100%) / 7)">
+                  Pusat
+                </th>
+                <th style="font-weight: bold; width: calc((100%) / 7)">RAS</th>
+                <th style="font-weight: bold; width: calc((100%) / 7)">
+                  Kepesertaan
+                </th>
+                <th style="font-weight: bold; width: calc((100%) / 7)">
+                  Pihak Ketiga
+                </th>
+                <th style="font-weight: bold; width: calc((100%) / 7)">
+                  Wakaf Salman
+                </th>
+                <th style="font-weight: bold; width: calc((100%) / 7)">
+                  Total Anggaran
+                </th>
               </tr>
             </thead>
             <tbody>
-              <template
-                v-if="
-                  programResumeByOption && programResumeByOption.length === 0
-                "
-              >
-                <tr>
-                  <td colspan="8" class="text-center">Data masih kosong</td>
-                </tr>
-              </template>
-              <template v-else>
-                <!-- Isi tabel saat tombol "Resume" diklik -->
-                <tr
-                  v-for="(program, index) in programResumeByOption"
-                  :key="index"
-                >
-                  <td>{{ program.no }}</td>
-                  <td>{{ program.program }}</td>
-                  <td>{{ program.pusat }}</td>
-                  <td>{{ program.ras }}</td>
-                  <td>{{ program.kepesertaan }}</td>
-                  <td>{{ program.pihakKetiga }}</td>
-                  <td>{{ program.wakafSalman }}</td>
-                  <td>{{ program.totalAnggaran }}</td>
-                </tr>
-              </template>
+              <tr v-for="item in filteredData" :key="item.id">
+                <td>{{ item.id }}</td>
+                <td>{{ item.nama }}</td>
+                <td>{{ formatCurrency(item.dana_pusat) }}</td>
+                <td>{{ formatCurrency(item.ras) }}</td>
+                <td>{{ formatCurrency(item.kepesertaan) }}</td>
+                <td>{{ formatCurrency(item.pihak_ketiga) }}</td>
+                <td>{{ formatCurrency(item.wakaf_salman) }}</td>
+                <td>{{ formatCurrency(item.total_anggaran) }}</td>
+              </tr>
             </tbody>
           </table>
         </div>
@@ -203,46 +167,120 @@
   </div>
 </template>
 
-<script lang="ts">
+<script>
 import Sidebar from "@/components/SidebarView.vue";
 import axios from "@/lib/axios";
 
 export default {
+  components: {
+    Sidebar,
+  },
   data() {
     return {
+      data: [], // Initialize as empty array
+      programOptions: [],
+      rencanaAnggaranData: [], // Initialize as empty array
+      selectedOptionIndex: null,
       selectedYear: new Date().getFullYear(),
       years: this.generateYears(),
-      showResumeTable: false,
-      programAnggaran: [], // Hapus data default, karena akan diisi dari API
-      programResume: [], // Hapus data default, karena akan diisi dari API
-      options: [
-        "PROGRAM KEPUSTAKAAN",
-        "PROGRAM INTELEKTUALITAS",
-        "PROGRAM EKOLITERASI",
-        "SUPPORTING SYSTEM",
-      ],
-      selectedOptionIndex: null,
       isPenjelasanActive: true,
       isResumeActive: false,
     };
   },
   computed: {
+    filteredData() {
+      let filtered = this.data;
+
+      if (this.selectedOptionIndex !== null) {
+        const selectedProgramId =
+          this.programOptions[this.selectedOptionIndex].id;
+        filtered = filtered.filter(
+          (item) => item.id_program === selectedProgramId
+        );
+      }
+
+      if (this.selectedYear !== null) {
+        filtered = filtered.filter((item) => item.tahun === this.selectedYear);
+      }
+
+      // Log to check the mapping
+      console.log("Filtered Data before mapping:", filtered);
+      console.log(
+        "Rencana Anggaran Data for mapping:",
+        this.rencanaAnggaranData
+      );
+
+      // Map rencana anggaran data to filtered data
+      filtered = filtered.map((item) => {
+        const rencanaItem = this.rencanaAnggaranData.find(
+          (ra) => ra.id === item.id
+        );
+        return {
+          ...item,
+          dana_pusat: rencanaItem ? rencanaItem.Dana_Pusat : "N/A",
+          ras: rencanaItem ? rencanaItem.Dana_RAS : "N/A",
+          kepesertaan: rencanaItem ? rencanaItem.Dana_Kepesertaan : "N/A",
+          pihak_ketiga: rencanaItem ? rencanaItem.Dana_Pihak_Ketiga : "N/A",
+          wakaf_salman: rencanaItem ? rencanaItem.Dana_Wakaf_Salman : "N/A",
+          total_anggaran: rencanaItem ? rencanaItem.Total_Dana : "N/A",
+        };
+      });
+
+      // Log to check the mapped data
+      console.log("Filtered Data after mapping:", filtered);
+
+      // Sort data by ID
+      return filtered.sort((a, b) => a.id - b.id);
+    },
     selectedOption() {
       return this.selectedOptionIndex !== null
-        ? this.options[this.selectedOptionIndex]
+        ? this.programOptions[this.selectedOptionIndex].nama
         : "PROGRAM KEPUSTAKAAN";
     },
-    programAnggaranByOption() {
-      return this.programAnggaran[this.selectedOption];
-    },
-    programResumeByOption() {
-      return this.programResume[this.selectedOption];
+    totalNilai() {
+      // Calculate the total value of total_anggaran
+      return this.filteredData.reduce((sum, item) => {
+        // Ensure the value is a number and not 'N/A'
+        const totalAnggaran = parseFloat(item.total_anggaran);
+        return sum + (isNaN(totalAnggaran) ? 0 : totalAnggaran);
+      }, 0);
     },
   },
   mounted() {
-    this.fetchProgramData();
+    this.fetchData();
+    this.fetchProgramOptions();
+    this.fetchRencanaAnggaranData();
   },
   methods: {
+    async fetchData() {
+      try {
+        const response = await axios.get("/api/programKegiatanRKA");
+        console.log("Response from API:", response.data); // Log the response from API for inspection
+        this.data = response.data.data; // Extract actual data from API response
+      } catch (error) {
+        console.error("Error fetching data:", error);
+      }
+    },
+    async fetchProgramOptions() {
+      try {
+        const response = await axios.get("/api/program");
+        this.programOptions = response.data; // Assuming response.data is an array of program options
+      } catch (error) {
+        console.error("Error fetching program options:", error);
+      }
+    },
+    async fetchRencanaAnggaranData() {
+      try {
+        const response = await axios.get("/api/custom/rencanaAnggaran");
+        console.log("Rencana Anggaran Data:", response.data); // Log the response data
+        this.rencanaAnggaranData = response.data; // Store the rencana anggaran data
+      } catch (error) {
+        console.error("Error fetching rencana anggaran data:", error);
+      }
+    },
+    selectOption(index) {
+      this.selectedOptionIndex = index;
+    },
     generateYears() {
       const currentYear = new Date().getFullYear();
       const years = [];
@@ -251,63 +289,57 @@ export default {
       }
       return years;
     },
-    fetchProgramData() {
-      axios
-        .get("/api/programKegiatanRKA")
-        .then((response) => {
-          this.programAnggaran = response.data.programAnggaran;
-          this.programResume = response.data.programResume;
-        })
-        .catch((error) => {
-          console.error("Gagal mengambil data program:", error);
-        });
-    },
-    editProgram(program) {
-      program.isEditing = !program.isEditing;
-      this.saveChanges(program);
-      console.log("Editing program:", program);
-    },
-    saveChanges(program) {
-      axios
-        .put("/api/programKegiatanRKA" + program.id, program)
-        .then((response) => {
-          console.log("Perubahan disimpan:", response.data);
-        })
-        .catch((error) => {
-          console.error("Gagal menyimpan perubahan:", error);
-        });
-    },
     goToInputPage() {
       this.$router.push({ path: "/inputrka" });
-    },
-    selectOption(index) {
-      this.selectedOptionIndex = index;
     },
     toggleActive(button) {
       if (button === "penjelasan") {
         this.isPenjelasanActive = true;
         this.isResumeActive = false;
-        this.showResumeTable = false;
       } else {
         this.isPenjelasanActive = false;
         this.isResumeActive = true;
-        this.showResumeTable = true;
       }
     },
-  },
-  components: {
-    Sidebar,
+    formatCurrency(value) {
+      return new Intl.NumberFormat("id-ID", {
+        style: "currency",
+        currency: "IDR",
+      }).format(value);
+    },
+    editProgram(item) {
+      item.isEditing = !item.isEditing;
+      this.saveChanges(item);
+      console.log("Editing program:", item);
+    },
   },
 };
 </script>
 
 <style>
-.box-text {
+.dropdown {
+  width: auto; /* Atur lebar dropdown agar menyesuaikan dengan panjang teks */
+  min-width: 270px; /* Lebar minimum dropdown */
+}
+
+.dropdown1 .dropdown-menu {
+  width: 100%; /* Menyesuaikan lebar menu dropdown dengan lebar dropdown */
+  max-height: 300px; /* Atur tinggi maksimum dropdown jika terdapat banyak opsi */
+  overflow-y: auto; /* Aktifkan scroll jika terdapat banyak opsi */
+  font-size: 12px;
+}
+
+.dropdown .dropdown-menu .dropdown-item {
+  white-space: normal; /* Biarkan teks panjang memanjang */
+  font-size: 12px;
+}
+
+.text-box {
   height: 40px;
-  width: 1116px;
+  width: 1300px;
   background-color: #d9d9d9;
   margin-top: 21px; /* Jarak antara kotak dan teks */
-  margin-right: 30px;
+  margin-right: 15px;
   margin-left: 15px;
   display: flex;
   justify-content: space-between; /* Menempatkan elemen ke ujung kiri dan kanan */
@@ -360,6 +392,14 @@ export default {
   color: white;
   height: 31px;
   width: 31px;
+}
+
+.tabel {
+  margin-bottom: 10px;
+}
+
+.tabel th {
+  background-color: #f2f2f2;
 }
 
 .container-box .btn:hover {
@@ -415,12 +455,12 @@ export default {
   font-weight: bold;
 }
 
-.dropdown {
+.dropdown1 {
   margin-top: 14px;
   margin-bottom: 38px;
 }
 
-.dropdown .m-md-2 {
+.dropdown1 .m-md-2 {
   border: 1px solid black;
   background-color: white;
 }
@@ -433,6 +473,7 @@ export default {
 
 .tahun {
   margin-top: 30px;
+  margin-left: 15px;
   font-weight: bold;
 }
 
